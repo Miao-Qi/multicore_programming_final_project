@@ -9,8 +9,10 @@ public class TreeTest {
 	// declare as
 	// static Tree<Integer
 	// so that the test cases will work
-	static Tree<Integer> Lockbased = new LockbasedBST<Integer>();
-	
+	static Tree<Integer> lockbasedBST = new LockbasedBST<Integer>();
+	static Tree<Integer> lockfreeBST = new LockFreeBST(false);
+	static Tree<Integer> lockavl = new LockAVLTree();
+	static Tree<Integer> lockavl_interfac = new LockAVLTreeInterface();
 	
 	public static class TestCase {
 		String name;
@@ -44,7 +46,7 @@ public class TreeTest {
 					ThreadLocalRandom rand = ThreadLocalRandom.current();
 					public void run() {
 						// TODO: write testing method
-						SUT.remove(rand.nextInt());
+						SUT.contains(rand.nextInt());
 					}
 				};
 			}
@@ -99,7 +101,7 @@ public class TreeTest {
 	        if(numError == 0)
 	        	sumTime += (stopTime - startTime);
 	        else
-	        	sumError += numError;
+	        	sumError += 1;
 		}
 		
 		System.out.println("Out of " + iterations + " executions, there were " + sumError + " errors.");
@@ -118,7 +120,19 @@ public class TreeTest {
 
         // To add a new test case follow the template
         // MyTest.test(new TestCase("name of the tree", Tree t));
-        MyTest.test(new TestCase("Lock-based BST", Lockbased));
+        MyTest.test(new TestCase("Lock-based BST", lockbasedBST));
+        MyTest.test(new TestCase("Lock-free BST", lockfreeBST));
+        MyTest.test(new TestCase("Efficient Lock-based AVL", lockavl_interfac));
+        
+//        if(lockfreeBST.add(100)) System.out.println("Add succeeds");
+//        if(lockfreeBST.contains(100)) System.out.println("Contains succeeds");
+//        if(lockfreeBST.remove(100)) System.out.println("Remove succeeds");
+        
+//      if(lockavl.add(100)) System.out.println("Add succeeds");
+//      if(lockavl.add(200)) System.out.println("Add succeeds");
+//      if(lockavl.add(300)) System.out.println("Add succeeds");
+//      if(lockavl.contains(100)) System.out.println("Contains succeeds");
+//      if(lockavl.remove(100)) System.out.println("Remove succeeds");
 	}
 
 }

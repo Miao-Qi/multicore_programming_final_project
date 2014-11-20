@@ -51,78 +51,73 @@ public class LockbasedBST<T extends Comparable<T>> implements Tree<T> {
 		master.lock();
 		try {
 			if(root == null)
-				root = new Node (value);
-			else {
-				Node parent = null;
-				Node next = root;
+				return false;
 				
-				while(true) {
-					if(next == null) return false;
-					
-					int cmp = value.compareTo(next.value);
-					parent = next;
-					
-					if(cmp == 0) {
-						break;
-					} else if(cmp > 0) {
-						 next = next.rchild;
-					} else { // less than
-						next = next.lchild;
-					}
+			Node parent = null;
+			Node next = root;
+			
+			while(true) {
+				if(next == null)
+					return false;
+				
+				int cmp = value.compareTo(next.value);
+				
+				parent = next;
+				if(cmp == 0) {
+					break; // Found!
+				} else if(cmp > 0) {
+					 next = next.rchild;
+				} else { // less than
+					next = next.lchild;
 				}
-				
-				// now next points to the value to be removed
-				// and parent points to the parent				
-				int cmp =  value.compareTo(parent.value);
-				if(cmp > 0) {
-					// next is parent's rchild
-					int n = next.numChild();
-					if(n == 0) {
-						parent.rchild = null;
-					} if(n == 1) {
-						if(next.hasLchild())
-							parent.rchild = next.lchild;
-						else
-							parent.rchild = next.rchild;
-					} else { // has both left and right child
-						Node r = next.rchild;
-						Node rparent = null;
-						while(r.hasLchild()) {
-							rparent = r;
-							r = r.lchild;
-						}
-						if(r.hasRchlid()) rparent.lchild = r.rchild;
-						parent.rchild = r;
-						r.lchild = next.lchild; r.rchild = next.rchild;
-					}
+			}
+			
+			if(next.isLeaf()) { // leaf
+				if(parent == null) { // root
+					root = null;
+				} else if(value.compareTo(parent.value) > 0) {
+					parent.rchild = null;
 				} else {
-					// next is parent's lchild
-					int n = next.numChild();
-					if(n == 0) {
-						parent.lchild = null;
-					} if(n == 1) {
-						if(next.hasLchild())
-							parent.lchild = next.lchild;
-						else
-							parent.lchild = next.rchild;
-					} else { // has both left and right child
-						Node r = next.rchild;
-						Node rparent = null;
-						while(r.hasLchild()) {
-							rparent = r;
-							r = r.lchild;
-						}
-						if(r.hasRchlid()) rparent.lchild = r.rchild;
-						parent.lchild = r;
-						r.lchild = next.lchild; r.rchild = next.rchild;
-					}
+					parent.lchild = null;
 				}
-					
+			}
+			
+			else if(!next.hasLchild()) {
+				Node child = next.rchild;
+				next.swap(child);
+				next.lchild = child.lchild;
+				next.rchild = child.rchild;
+			}
+			
+			else if(!next.hasRchlid()) {
+				Node child = next.lchild;
+				next.swap(child);
+				next.lchild = child.lchild;
+				next.rchild = child.rchild;
+			}
+			
+			else { // has both children
+				Node child = next.lchild;
+				parent = null;
+				while(child.hasRchlid()) {
+					parent = child;
+					child = child.rchild;
+				}
+				
+				if(parent == null) {
+					next.swap(child);
+					next.lchild = child.lchild;
+					next.rchild = child.rchild;
+				} else {
+					next.swap(child);
+					parent.rchild = child.lchild;
+				}
+				
 			}
 		} finally {
 			master.unlock();
 		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -153,16 +148,14 @@ public class LockbasedBST<T extends Comparable<T>> implements Tree<T> {
 		T value;
 		Node lchild, rchild;
 		
-		public boolean isLeaf() {
-			return (lchild == null && rchild == null);
-		}
-		
 		public boolean hasLchild() { return lchild != null; }
 		public boolean hasRchlid() { return rchild != null; }
+		public boolean isLeaf() { return lchild == null && rchild == null; } 
 		
-		public int numChild() {
-			return ((lchild==null)?1:0) + ((rchild==null)?1:0);
+		public void swap(Node other) {
+			T tmp = this.value;
+			this.value = other.value;
+			other.value = tmp; 
 		}
-		
 	}
 }
